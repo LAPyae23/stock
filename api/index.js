@@ -1,4 +1,9 @@
 // Vercel serverless entry: vercel.json rewrites /v1/*, /health and /api/docs here.
-import app from "./_lib/app.js";
+// Vercel's Node runtime accepts the Web Standard `fetch` export.
+import { app } from "./_lib/app.js";
 
-export default app;
+export default {
+  fetch(request) {
+    return app.handle(request);
+  }
+};

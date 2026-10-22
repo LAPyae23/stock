@@ -1,6 +1,6 @@
 # INVENTO — warehouse inventory MVP (PRD v1.1)
 
-Mobile-first inventory app for small Myanmar warehouses: React + Vite frontend, Express API, **MongoDB** database.
+Mobile-first inventory app for small Myanmar warehouses: React + Vite frontend, Elysia API, **MongoDB** database.
 Built against `references/INVENTO-PRD-v1.1.pdf`.
 
 ## Features (PRD Phase 1)
@@ -20,6 +20,8 @@ Built against `references/INVENTO-PRD-v1.1.pdf`.
 ## Run locally (Windows)
 MongoDB Server runs as the Windows service **MongoDB** (auto-start) at `mongodb://127.0.0.1:27017`, database `invento`.
 
+The API uses Elysia 2 (`2.0.0-rc.0`) and needs Node.js 22.18+ for its Node adapter, or Bun 1.4+. Run the API with Bun instead of Node with `bun --watch api/server.js`.
+
 ```bash
 npm run setup
 ```
@@ -28,9 +30,19 @@ npm run dev
 ```
 Open http://localhost:5173 — demo login `demo@invento.local` / `InventoDemo!2026` (created automatically on an empty database).
 
-`api/.env` (copy from `api/.env.example`): `MONGODB_URI`, `MONGODB_DB`, `JWT_SECRET`, `WEB_ORIGIN`, `SEED_DEMO`.
+`api/.env` (copy from `api/.env.example`): `MONGODB_URI`, `MONGODB_DB`, `JWT_SECRET`, `WEB_ORIGIN`, `SEED_DEMO`; optional `LOG_LEVEL` and `SLOW_REQUEST_MS`.
 
-Tests: `npm test` (voice parser tests + translation type check). Inspect data with `mongosh` → `use invento`.
+Tests: `npm test` (voice parser, expiry parser, API route tests, and translation type check). Inspect data with `mongosh` → `use invento`.
+
+## Logging
+Every request logs one line with its status, duration and a request id. The same id is returned in the `X-Request-Id` response header, so a browser error can be matched to a server log.
+
+- Locally the line is compact and colorized when the terminal supports it.
+- On Vercel (or with `LOG_FORMAT=json`) each line is a JSON object for log drains.
+- `LOG_LEVEL=debug|info|warn|error|silent` sets the minimum level (`info` by default).
+- Requests slower than `SLOW_REQUEST_MS` (default `1000`; `0` disables) log at warn level and are tagged `SLOW`.
+- Startup, database connection and graceful shutdown are logged too.
+- MongoDB connection strings are redacted before they are logged.
 
 ## Deploy to Vercel
 `vercel.json` builds `web/` as static files and serves the API from `api/index.js` as a serverless function.
@@ -51,6 +63,7 @@ vercel deploy --prod
 `GET /api/docs` lists every endpoint. Main ones: `/v1/auth/*`, `/v1/products`, `/v1/products/lookup/:code`, `/v1/stock/in`, `/v1/stock/in/batch` (push-to-talk save), `/v1/stock/out`, `/v1/stock/counts`, `/v1/voice/parse`, `/v1/reorders`, `/v1/alerts`, `/v1/movements`, `/v1/warehouse`.
 
 ## Known limits
+- Elysia 2 is pinned at `2.0.0-rc.0`; review the release notes before upgrading to the final 2.0 release.
 - Speech recognition uses the browser (best in Chrome/Android); Burmese accuracy depends on Google's `my-MM` model — the review step is the safeguard.
 - Camera scanning needs HTTPS (Vercel) or localhost.
 - Local MongoDB is standalone, so multi-document transactions only run on Atlas; locally writes are ordered and stock changes use atomic conditional updates.

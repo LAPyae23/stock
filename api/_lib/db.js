@@ -33,6 +33,13 @@ export async function getDb() {
   return g.__invento.ready;
 }
 
+/** Closes the shared client so `node server.js` can exit on SIGINT/SIGTERM. */
+export async function closeDb() {
+  const client = g.__invento.client;
+  g.__invento = { client: null, ready: null };
+  if (client) await client.close();
+}
+
 /** Runs fn(session) in a transaction when the server supports it, otherwise without one. */
 export async function withTx(fn) {
   const db = await getDb();

@@ -2,7 +2,10 @@
   "name": "invento-mvp",
   "version": "0.2.0",
   "private": true,
-  "description": "Invento warehouse inventory MVP - React web frontend and Express + MongoDB API",
+  "description": "Invento warehouse inventory MVP - React web frontend and Elysia + MongoDB API",
+  "engines": {
+    "node": ">=22.18"
+  },
   "scripts": {
     "setup": "npm install && npm --prefix api install && npm --prefix web install",
     "dev": "concurrently -k \"npm run dev:api\" \"npm run dev:web\"",
